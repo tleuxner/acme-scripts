@@ -10,3 +10,11 @@ Helper scripts for the ACME-client.
     └── host.example1.com
         ├── fullchain.pem
         └── privkey.pem
+
+Add dedicated nsupdate key to Bind configuration for the DANE resource record (optional):
+
+    dnssec-keygen -a hmac-md5 -b 512 -r /dev/urandom -n HOST host.example.com
+
+Bind configuration snippet for zone containing MX:
+
+    update-policy { grant host.example.com. name _25._tcp.host.example.com. TLSA; };
