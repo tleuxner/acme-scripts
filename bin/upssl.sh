@@ -20,11 +20,15 @@ dane_nsupdate_key='/root/Kxxxx.123+45678.private'
 msg_formatted() {
 	echo "[>] $*"
 }
+
+# split out certificate name from path and replace dots with underscores
+cert_file_name_split() {
+        cert_file=$(echo $i | awk -F/ '{ gsub (/\./,"_"); print $5 }')
+}
  
 for i in $(find $acme_certs_dir -name fullchain.pem) 
 	do 
-	# split out certificate name from path and replace dots with underscores
-	cert_file=$(echo $i | awk -F/ '{ gsub (/\./,"_"); print $5 }') 
+	cert_file_name_split
 	# certificate is new?
 	[ -f "$ssl_certs_dir/$cert_file$cert_file_ext" ] || \
 	{ msg_formatted "New certficate $ssl_certs_dir/$cert_file$cert_file_ext..."; touch -d "1 hour ago" $ssl_certs_dir/$cert_file$cert_file_ext  >&2; } 
@@ -36,7 +40,7 @@ done
 
 for i in $(find $acme_certs_dir -name privkey.pem) 
 	do 
-	cert_file=$(echo $i | awk -F/ '{ gsub (/\./,"_"); print $5 }') 
+	cert_file_name_split
 	[ -f "$ssl_certs_keydir/$cert_file$cert_keyfile_ext" ] || \
 	{ msg_formatted "New key $ssl_certs_keydir/$cert_file$cert_keyfile_ext..."; touch -d "1 hour ago" $ssl_certs_keydir/$cert_file$cert_keyfile_ext  >&2; } 
 	[ "$i" -nt $ssl_certs_keydir/$cert_file$cert_keyfile_ext ] && \
