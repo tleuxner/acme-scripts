@@ -13,7 +13,7 @@ Helper scripts for the ACME-client [dehydrated](https://github.com/lukas2511/deh
 
 Add dedicated nsupdate key to Bind configuration for the DANE resource record (optional):
 
-    dnssec-keygen -a hmac-md5 -b 512 -r /dev/urandom -n HOST host.example.com
+    dnssec-keygen -a hmac-sha512 -b 512 -r /dev/urandom -n HOST host.example.com
 
 Bind configuration snippet for zone containing MX:
 
