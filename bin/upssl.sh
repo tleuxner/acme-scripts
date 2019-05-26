@@ -48,7 +48,7 @@ for i in $(find $acme_certs_dir -name privkey.pem)
 	{ msg_formatted "$i_step New key $ssl_certs_keydir/$cert_file$cert_keyfile_ext..."; touch -d "1 hour ago" $ssl_certs_keydir/$cert_file$cert_keyfile_ext  >&2; } 
 	[ "$i" -nt $ssl_certs_keydir/$cert_file$cert_keyfile_ext ] && \
 	{ msg_formatted "$i_step Updating $ssl_certs_keydir/$cert_file$cert_keyfile_ext..."; cp -p $i $ssl_certs_keydir/$cert_file$cert_keyfile_ext; \
-	chmod 600 $ssl_certs_keydir/$cert_file$cert_keyfile_ext >&2; }
+	chmod 400 $ssl_certs_keydir/$cert_file$cert_keyfile_ext >&2; }
 done
 
 	# Check whether mail server certficate has been renewed
@@ -59,9 +59,9 @@ done
 		{ echo "update add $dane_record"; echo send; echo quit; } | nsupdate -v -k $dane_nsupdate_key
 	fi
 
-        # Check whether LDAP certificate has been renewed
-        ldap_file_date_new=$(date -r $ldap_keyfile +%s)
-        if [ $ldap_file_date_new -gt $ldap_file_date_old ]; then
-        { msg_formatted "$i_step Updating LDAP Key: $ldap_keyfile"; cp -p $ldap_keyfile $ldap_certs_dir/$ldap_private_key; \
-        chmod 400 $ldap_certs_dir/$ldap_private_key; chgrp openldap: $ldap_certs_dir/$ldap_private_key >&2; }
-        fi
+	# Check whether LDAP certificate has been renewed
+	ldap_file_date_new=$(date -r $ldap_keyfile +%s)
+	if [ $ldap_file_date_new -gt $ldap_file_date_old ]; then
+	{ msg_formatted "$i_step Updating LDAP Key: $ldap_keyfile"; cp -p $ldap_keyfile $ldap_certs_dir/$ldap_private_key; \
+	chmod 400 $ldap_certs_dir/$ldap_private_key; chgrp openldap: $ldap_certs_dir/$ldap_private_key >&2; }
+	fi
