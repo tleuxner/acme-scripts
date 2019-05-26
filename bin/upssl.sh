@@ -26,7 +26,7 @@ ldap_file_date_old=$(date -r $ldap_keyfile +%s)
 
 # split out certificate name from path and replace dots with underscores
 cert_file_name_split() {
-        cert_file=$(echo $i | awk -F/ '{ gsub (/\./,"_"); print $5 }')
+	cert_file=$(echo $i | awk -F/ '{ gsub (/\./,"_"); print $5 }')
 }
  
 for i in $(find $acme_certs_dir -name fullchain.pem) 
@@ -34,10 +34,10 @@ for i in $(find $acme_certs_dir -name fullchain.pem)
 	cert_file_name_split
 	# certificate is new?
 	[ -f "$ssl_certs_dir/$cert_file$cert_file_ext" ] || \
-	{ msg_formatted "New certficate $ssl_certs_dir/$cert_file$cert_file_ext..."; touch -d "1 hour ago" $ssl_certs_dir/$cert_file$cert_file_ext  >&2; } 
+	{ msg_formatted "$i_step New certficate $ssl_certs_dir/$cert_file$cert_file_ext..."; touch -d "1 hour ago" $ssl_certs_dir/$cert_file$cert_file_ext  >&2; } 
 	# certificate is a renewal?
 	[ "$i" -nt $ssl_certs_dir/$cert_file$cert_file_ext ] && \
-	{ msg_formatted "Updating $ssl_certs_dir/$cert_file$cert_file_ext..."; cp -p $i $ssl_certs_dir/$cert_file$cert_file_ext; \
+	{ msg_formatted "$i_step Updating $ssl_certs_dir/$cert_file$cert_file_ext..."; cp -p $i $ssl_certs_dir/$cert_file$cert_file_ext; \
 	chmod 644 $ssl_certs_dir/$cert_file$cert_file_ext >&2; }
 done
 
@@ -45,9 +45,9 @@ for i in $(find $acme_certs_dir -name privkey.pem)
 	do 
 	cert_file_name_split
 	[ -f "$ssl_certs_keydir/$cert_file$cert_keyfile_ext" ] || \
-	{ msg_formatted "New key $ssl_certs_keydir/$cert_file$cert_keyfile_ext..."; touch -d "1 hour ago" $ssl_certs_keydir/$cert_file$cert_keyfile_ext  >&2; } 
+	{ msg_formatted "$i_step New key $ssl_certs_keydir/$cert_file$cert_keyfile_ext..."; touch -d "1 hour ago" $ssl_certs_keydir/$cert_file$cert_keyfile_ext  >&2; } 
 	[ "$i" -nt $ssl_certs_keydir/$cert_file$cert_keyfile_ext ] && \
-	{ msg_formatted "Updating $ssl_certs_keydir/$cert_file$cert_keyfile_ext..."; cp -p $i $ssl_certs_keydir/$cert_file$cert_keyfile_ext; \
+	{ msg_formatted "$i_step Updating $ssl_certs_keydir/$cert_file$cert_keyfile_ext..."; cp -p $i $ssl_certs_keydir/$cert_file$cert_keyfile_ext; \
 	chmod 600 $ssl_certs_keydir/$cert_file$cert_keyfile_ext >&2; }
 done
 
@@ -55,7 +55,7 @@ done
 	dane_file_date_new=$(date -r $dane_keyfile +%s)
 	if [ $dane_file_date_new -gt $dane_file_date_old ]; then
 		dane_record=$(postfix tls output-server-tlsa $dane_keyfile | sed -e "1d;s/IN/$dane_ttl/")
-		msg_formatted "Updating DANE RR: $dane_record"
+		msg_formatted "$i_step Updating DANE RR: $dane_record"
 		{ echo "update add $dane_record"; echo send; echo quit; } | nsupdate -v -k $dane_nsupdate_key
 	fi
 
