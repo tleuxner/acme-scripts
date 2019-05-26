@@ -6,7 +6,8 @@ set -e
 #
 # [04-10-2017]
 # + added DANE RR Update Logic: DNS fingerprint
-#
+# [26-05-2019]
+# + added LDAP certificate Update Logic
 acme_certs_dir='/etc/dehydrated/certs'
 cert_file_ext='_ACME.pem'
 cert_keyfile_ext='_ACME.key'
@@ -16,10 +17,12 @@ dane_keyfile="$ssl_certs_keydir/host_example_com_ACME.key"
 dane_ttl='900'
 dane_file_date_old=$(date -r $dane_keyfile +%s)
 dane_nsupdate_key='/root/Kxxxx.123+45678.private'
+ldap_certs_dir='/etc/ldap/tls'
+ldap_private_key='host_example_com_ACME.key'
+ldap_keyfile="$ssl_certs_keydir/$ldap_private_key"
+ldap_file_date_old=$(date -r $ldap_keyfile +%s)
 
-msg_formatted() {
-	echo "[>] $*"
-}
+. msg_formatted.inc
 
 # split out certificate name from path and replace dots with underscores
 cert_file_name_split() {
@@ -55,3 +58,10 @@ done
 		msg_formatted "Updating DANE RR: $dane_record"
 		{ echo "update add $dane_record"; echo send; echo quit; } | nsupdate -v -k $dane_nsupdate_key
 	fi
+
+        # Check whether LDAP certificate has been renewed
+        ldap_file_date_new=$(date -r $ldap_keyfile +%s)
+        if [ $ldap_file_date_new -gt $ldap_file_date_old ]; then
+        { msg_formatted "$i_step Updating LDAP Key: $ldap_keyfile"; cp -p $ldap_keyfile $ldap_certs_dir/$ldap_private_key; \
+        chmod 400 $ldap_certs_dir/$ldap_private_key; chgrp openldap: $ldap_certs_dir/$ldap_private_key >&2; }
+        fi
